@@ -579,21 +579,33 @@
                             userAvatarFallback.style.display = "flex";
                         }
 
-                        // Record login
-                        const userInfo = {
+                        // Record login to Subscribers table
+                        const loginRecord = {
                             Email: email,
                             Name: name,
                             Provider: provider,
                             LastLoginAt: new Date().toISOString()
                         };
 
-                        await fetch("/rest/Users", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(userInfo)
-                        });
+                        try {
+                            const recordResponse = await fetch("/rest/Subscribers", {
+                                method: "POST",
+                                headers: { 
+                                    "Content-Type": "application/json",
+                                    "X-MS-API-ROLE": "authenticated"
+                                },
+                                body: JSON.stringify(loginRecord)
+                            });
 
-                        console.log("User login recorded:", email);
+                            if (recordResponse.ok) {
+                                console.log("Login recorded successfully:", email);
+                            } else {
+                                const errorText = await recordResponse.text();
+                                console.error("Failed to record login:", recordResponse.status, errorText);
+                            }
+                        } catch (recordError) {
+                            console.error("Error recording login:", recordError);
+                        }
                     } else {
                         // Not logged in
                         loginBtn.style.display = "block";
