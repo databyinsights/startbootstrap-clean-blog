@@ -18,7 +18,31 @@
 .login-panel.show {
     right: 0;
 }
+.navbar-logo {
+    height: 70px;
+    width: auto;
+    max-width: 350px;
+    transition: opacity 0.3s ease;
+}
 
+.navbar-logo:hover {
+    opacity: 0.8;
+}
+
+/* Adjust navbar-brand for logo */
+.navbar-brand-modern {
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Mobile responsive logo sizing */
+@media (max-width: 768px) {
+    .navbar-logo {
+        height: 45px;
+        max-width: 150px;
+    }
+}
 .panel-overlay {
     position: fixed;
     top: 0;
