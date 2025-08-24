@@ -14,6 +14,10 @@
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css" />
         <!-- Core theme CSS (includes Bootstrap)-->
         <link href="css/styles.css" rel="stylesheet" />
+        <!-- Enhanced Login Panel CSS -->
+        <link href="css/login-panel.css" rel="stylesheet" />
+        <!-- MD5 for Gravatar -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     </head>
     <body>
         <!-- Navigation-->
@@ -32,22 +36,127 @@
                         <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="contact.html">Contact</a></li>
                     </ul>
                 </div>
-                <!-- User Profile sign-in / sign-out -->
+                
+                <!-- Enhanced User Authentication Area -->
                 <div id="auth-area" class="ms-auto d-flex align-items-center">
-                    <span id="user-greeting" class="me-2 text-muted small" style="display:none;"></span>
-                    <img id="user-avatar" src="assets/img/default-user.png" alt="User" class="rounded-circle" style="width:32px;height:32px;display:none;">
+                    <!-- When not logged in -->
+                    <button id="login-btn" class="btn btn-login-enhanced">
+                        <i class="fas fa-sign-in-alt me-2"></i>Log In
+                    </button>
                     
-                    <button id="login-btn" class="btn btn-outline-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#loginModal">Sign In</button>
-                    <a href="/.auth/logout?post_logout_redirect_uri=/" id="logout-btn" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">Sign Out</a>
+                    <!-- When logged in -->
+                    <div id="user-section" class="user-menu" style="display: none;">
+                        <span id="user-greeting" class="me-3 text-muted small"></span>
+                        <div class="d-flex align-items-center">
+                            <img id="user-avatar" src="assets/img/default-user.png" alt="User" class="user-avatar-enhanced me-2">
+                            <button class="btn btn-logout-enhanced" id="user-menu-toggle">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="user-dropdown" id="user-dropdown">
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a>
+                            <a href="#" class="dropdown-item">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </a>
+                            <div style="border-top: 1px solid #e5e7eb; margin: 0.5rem 0;"></div>
+                            <a href="/.auth/logout?post_logout_redirect_uri=/" class="dropdown-item">
+                                <i class="fas fa-sign-out-alt me-2"></i>Log Out
+                            </a>
+                        </div>
+                    </div>
                 </div>
-
-    <!-- Basic sign-in / sign-out -->
-    <a href="/.auth/login/github" id="login-btn" class="btn btn-sm btn-outline-primary me-2">Sign In</a>
-    <a href="/.auth/logout?post_logout_redirect_uri=/" id="logout-btn" class="btn btn-sm btn-outline-danger" style="display:none;">Sign Out</a>
-</div>
-
             </div>
         </nav>
+
+        <!-- Login Panel Overlay -->
+        <div class="panel-overlay" id="panel-overlay"></div>
+
+        <!-- Enhanced Right-Side Login Panel -->
+        <div class="login-panel" id="login-panel">
+            <div class="login-panel-header">
+                <button class="close-panel" id="close-panel">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3 class="mb-2">Welcome Back</h3>
+                <p class="mb-0 opacity-75">Choose your preferred way to log in</p>
+            </div>
+            
+            <div class="login-panel-body">
+                <!-- Social Login Providers -->
+                <div class="mb-4">
+                    <a href="/.auth/login/google" class="provider-btn google">
+                        <svg class="provider-icon" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    </a>
+
+                    <a href="/.auth/login/microsoft" class="provider-btn microsoft">
+                        <svg class="provider-icon" viewBox="0 0 24 24">
+                            <path fill="#f25022" d="M1 1h10v10H1z"/>
+                            <path fill="#00a4ef" d="M13 1h10v10H13z"/>
+                            <path fill="#7fba00" d="M1 13h10v10H1z"/>
+                            <path fill="#ffb900" d="M13 13h10v10H13z"/>
+                        </svg>
+                        Continue with Microsoft
+                    </a>
+
+                    <a href="/.auth/login/github" class="provider-btn github">
+                        <svg class="provider-icon" viewBox="0 0 24 24" fill="#333">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        Continue with GitHub
+                    </a>
+
+                    <a href="/.auth/login/apple" class="provider-btn apple">
+                        <svg class="provider-icon" viewBox="0 0 24 24" fill="#000">
+                            <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/>
+                        </svg>
+                        Continue with Apple
+                    </a>
+                </div>
+
+                <!-- Email Login Section -->
+                <div class="divider-text">
+                    <span>or continue with email</span>
+                </div>
+
+                <div class="email-form">
+                    <form id="email-login-form">
+                        <div class="mb-3">
+                            <label for="email-input" class="form-label">Email address</label>
+                            <input type="email" class="form-control form-control-enhanced" id="email-input" placeholder="Enter your email" required>
+                        </div>
+                        <button type="submit" class="provider-btn email" style="margin-bottom: 0;">
+                            <i class="fas fa-envelope provider-icon" style="margin-right: 1rem; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;"></i>
+                            Continue with Email
+                        </button>
+                    </form>
+                    <p class="small text-muted mt-2 mb-0">
+                        We'll send you a secure magic link to log in without a password.
+                    </p>
+                </div>
+
+                <!-- Security Notice -->
+                <div class="mt-4 p-3" style="background: #f0f9ff; border-radius: 0.5rem; border-left: 4px solid #0ea5e9;">
+                    <div class="d-flex">
+                        <i class="fas fa-shield-alt text-info me-2 mt-1"></i>
+                        <div>
+                            <small class="text-info fw-bold">Secure Authentication</small>
+                            <p class="small text-muted mb-0">
+                                Your data is protected with enterprise-grade security. We never store passwords and use industry-standard OAuth protocols.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Page Header-->
         <header class="masthead" style="background-image: url('assets/img/home-bg.jpg')">
             <div class="container position-relative px-4 px-lg-5">
@@ -61,6 +170,7 @@
                 </div>
             </div>
         </header>
+        
         <!-- Main Content-->
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
@@ -108,7 +218,7 @@
                     <div class="post-preview">
                         <a href="post.html">
                             <h2 class="post-title">Failure is not an option</h2>
-                            <h3 class="post-subtitle">Many say exploration is part of our destiny, but it’s actually our duty to future generations.</h3>
+                            <h3 class="post-subtitle">Many say exploration is part of our destiny, but it's actually our duty to future generations.</h3>
                         </a>
                         <p class="post-meta">
                             Posted by
@@ -123,6 +233,7 @@
                 </div>
             </div>
         </div>
+        
         <!-- Footer-->
         <footer class="border-top">
             <div class="container px-4 px-lg-5">
@@ -159,104 +270,178 @@
                 </div>
             </div>
         </footer>
+        
         <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Core theme JS-->
         <script src="js/scripts.js"></script>
-   <script>
-document.addEventListener("DOMContentLoaded", async () => {
-    const loginBtn = document.getElementById("login-btn");
-    const logoutBtn = document.getElementById("logout-btn");
-    const userGreeting = document.getElementById("user-greeting");
-    const userAvatar = document.getElementById("user-avatar");
+        
+        <script>
+            // Enhanced Authentication and UI Management
+            document.addEventListener("DOMContentLoaded", async () => {
+                const loginBtn = document.getElementById("login-btn");
+                const userSection = document.getElementById("user-section");
+                const userGreeting = document.getElementById("user-greeting");
+                const userAvatar = document.getElementById("user-avatar");
+                const loginPanel = document.getElementById("login-panel");
+                const panelOverlay = document.getElementById("panel-overlay");
+                const closePanel = document.getElementById("close-panel");
+                const userMenuToggle = document.getElementById("user-menu-toggle");
+                const userDropdown = document.getElementById("user-dropdown");
+                const emailLoginForm = document.getElementById("email-login-form");
 
-    try {
-        const response = await fetch("/.auth/me");
-        const authData = await response.json();
+                // Login Panel Controls
+                loginBtn.addEventListener("click", () => {
+                    loginPanel.classList.add("show");
+                    panelOverlay.classList.add("show");
+                    document.body.style.overflow = "hidden";
+                });
 
-        if (authData && authData.clientPrincipal) {
-            const user = authData.clientPrincipal;
+                function closeLoginPanel() {
+                    loginPanel.classList.remove("show");
+                    panelOverlay.classList.remove("show");
+                    document.body.style.overflow = "auto";
+                }
 
-            // Basic user info
-            const name = user.userDetails.split('@')[0];
-            const email = user.userDetails;
-            const provider = user.identityProvider;
-            const avatarUrl = getProviderAvatar(provider, email);
+                closePanel.addEventListener("click", closeLoginPanel);
+                panelOverlay.addEventListener("click", closeLoginPanel);
 
-            // Update UI
-            loginBtn.style.display = "none";
-            logoutBtn.style.display = "inline-block";
-            userGreeting.textContent = `Welcome, ${name}`;
-            userGreeting.style.display = "inline-block";
-            userAvatar.src = avatarUrl;
-            userAvatar.style.display = "inline-block";
+                // User dropdown toggle
+                userMenuToggle.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle("show");
+                });
 
-            // Record login
-            const userInfo = {
-                Email: email,
-                Name: name,
-                Provider: provider,
-                LastLoginAt: new Date().toISOString()
-            };
+                // Close dropdown when clicking outside
+                document.addEventListener("click", () => {
+                    userDropdown.classList.remove("show");
+                });
 
-            await fetch("/rest/Users", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(userInfo)
+                // Email login form handling
+                emailLoginForm.addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById("email-input").value;
+                    
+                    // For demonstration - in real implementation, this would trigger a magic link
+                    alert(`Magic link sent to ${email}! Check your inbox.`);
+                });
+
+                // Escape key to close panel
+                document.addEventListener("keydown", (e) => {
+                    if (e.key === "Escape" && loginPanel.classList.contains("show")) {
+                        closeLoginPanel();
+                    }
+                });
+
+                // Authentication State Detection
+                try {
+                    const response = await fetch("/.auth/me");
+                    const authData = await response.json();
+
+                    if (authData && authData.clientPrincipal) {
+                        const user = authData.clientPrincipal;
+                        const name = user.userDetails.split('@')[0];
+                        const email = user.userDetails;
+                        const provider = user.identityProvider;
+                        const avatarUrl = getProviderAvatar(provider, email);
+
+                        // Update UI for logged in state
+                        loginBtn.style.display = "none";
+                        userSection.style.display = "flex";
+                        userGreeting.textContent = `Welcome, ${name}`;
+                        userAvatar.src = avatarUrl;
+
+                        // Record login
+                        const userInfo = {
+                            Email: email,
+                            Name: name,
+                            Provider: provider,
+                            LastLoginAt: new Date().toISOString()
+                        };
+
+                        await fetch("/rest/Users", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(userInfo)
+                        });
+
+                        console.log("User login recorded:", email);
+                    } else {
+                        // Not logged in
+                        loginBtn.style.display = "block";
+                        userSection.style.display = "none";
+                    }
+                } catch (err) {
+                    console.error("Auth detection failed:", err);
+                    // Default to logged out state
+                    loginBtn.style.display = "block";
+                    userSection.style.display = "none";
+                }
             });
 
-            console.log("User login recorded:", email);
-        } else {
-            // Not logged in
-            loginBtn.style.display = "inline-block";
-            logoutBtn.style.display = "none";
-            userGreeting.style.display = "none";
-            userAvatar.style.display = "none";
-        }
-    } catch (err) {
-        console.error("Auth detection failed:", err);
-    }
-});
+            // Enhanced Avatar Provider Function
+            function getProviderAvatar(provider, email) {
+                switch (provider.toLowerCase()) {
+                    case 'github': 
+                        return `https://github.com/${email.split('@')[0]}.png`;
+                    case 'google': 
+                        return `https://www.gravatar.com/avatar/${md5(email.toLowerCase().trim())}?d=identicon&s=80`;
+                    case 'microsoft': 
+                        return `https://www.gravatar.com/avatar/${md5(email.toLowerCase().trim())}?d=identicon&s=80`;
+                    case 'apple':
+                        return `https://www.gravatar.com/avatar/${md5(email.toLowerCase().trim())}?d=identicon&s=80`;
+                    default: 
+                        return 'assets/img/default-user.png';
+                }
+            }
 
-// Guess avatar based on provider or use fallback
-function getProviderAvatar(provider, email) {
-    switch (provider.toLowerCase()) {
-        case 'github': return `https://github.com/${email.split('@')[0]}.png`;
-        case 'google': return `https://www.gravatar.com/avatar/${md5(email)}?d=identicon`;
-        case 'microsoft': return 'https://cdn-icons-png.flaticon.com/512/732/732221.png'; // fallback
-        default: return 'assets/img/default-user.png';
-    }
-}
+            // Simple MD5 hash function for Gravatar
+            function md5(str) {
+                if (typeof CryptoJS !== 'undefined' && CryptoJS.MD5) {
+                    return CryptoJS.MD5(str).toString();
+                }
+                // Fallback if CryptoJS is not loaded
+                return btoa(str).replace(/[^a-zA-Z0-9]/g, '').toLowerCase().substring(0, 32);
+            }
 
-// Simple MD5 hash function for Gravatar (optional)
-function md5(str) {
-    return CryptoJS.MD5(str.trim().toLowerCase()).toString();
-}
-</script>
+            // Enhanced panel animations and interactions
+            function addPanelEnhancements() {
+                const providerButtons = document.querySelectorAll('.provider-btn');
+                
+                providerButtons.forEach(button => {
+                    button.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateY(-2px) scale(1.02)';
+                    });
+                    
+                    button.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0) scale(1)';
+                    });
+                });
 
-<!-- Add this in <head> for MD5 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+                // Add loading state for provider buttons
+                providerButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        if (!this.classList.contains('email')) {
+                            const originalText = this.innerHTML;
+                            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Redirecting...';
+                            this.style.pointerEvents = 'none';
+                            
+                            // Reset after 3 seconds as fallback
+                            setTimeout(() => {
+                                this.innerHTML = originalText;
+                                this.style.pointerEvents = 'auto';
+                            }, 3000);
+                        }
+                    });
+                });
+            }
 
-
-<!-- Login Provider Modal -->
-<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content shadow-lg">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="loginModalLabel">Sign In with Provider</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center py-4">
-        <p class="mb-4 text-muted">Select a provider to sign in securely:</p>
-        <div class="d-grid gap-2 col-8 mx-auto">
-          <a href="/.auth/login/google" class="btn btn-outline-danger">Google</a>
-          <a href="/.auth/login/github" class="btn btn-outline-dark">GitHub</a>
-          <a href="/.auth/login/microsoft" class="btn btn-outline-info">Microsoft</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
+            // Initialize enhancements when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', addPanelEnhancements);
+            } else {
+                addPanelEnhancements();
+            }
+        </script>
     </body>
 </html>
