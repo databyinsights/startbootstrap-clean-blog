@@ -32,14 +32,15 @@
                         <li class="nav-item"><a class="nav-link px-lg-3 py-3 py-lg-4" href="contact.html">Contact</a></li>
                     </ul>
                 </div>
-                <div id="auth-buttons" class="d-flex align-items-center ms-auto">
-    <span id="user-greeting" class="me-2 text-muted small" style="display:none;"></span>
-    <!-- Multiple provider login buttons (optional) -->
-    <div id="provider-options" style="display:none;">
-        <a href="/.auth/login/github" class="btn btn-sm btn-outline-primary me-1">GitHub</a>
-        <a href="/.auth/login/google" class="btn btn-sm btn-outline-success me-1">Google</a>
-        <a href="/.auth/login/microsoft" class="btn btn-sm btn-outline-info">Microsoft</a>
-    </div>
+                <!-- User Profile sign-in / sign-out -->
+                <div id="auth-area" class="ms-auto d-flex align-items-center">
+                    <span id="user-greeting" class="me-2 text-muted small" style="display:none;"></span>
+                    <img id="user-avatar" src="assets/img/default-user.png" alt="User" class="rounded-circle" style="width:32px;height:32px;display:none;">
+                    
+                    <button id="login-btn" class="btn btn-outline-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#loginModal">Sign In</button>
+                    <a href="/.auth/logout?post_logout_redirect_uri=/" id="logout-btn" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">Sign Out</a>
+                </div>
+
     <!-- Basic sign-in / sign-out -->
     <a href="/.auth/login/github" id="login-btn" class="btn btn-sm btn-outline-primary me-2">Sign In</a>
     <a href="/.auth/logout?post_logout_redirect_uri=/" id="logout-btn" class="btn btn-sm btn-outline-danger" style="display:none;">Sign Out</a>
@@ -167,7 +168,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const loginBtn = document.getElementById("login-btn");
     const logoutBtn = document.getElementById("logout-btn");
     const userGreeting = document.getElementById("user-greeting");
-    const providerOptions = document.getElementById("provider-options");
+    const userAvatar = document.getElementById("user-avatar");
 
     try {
         const response = await fetch("/.auth/me");
@@ -176,42 +177,86 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (authData && authData.clientPrincipal) {
             const user = authData.clientPrincipal;
 
-            // Show greeting and logout
+            // Basic user info
+            const name = user.userDetails.split('@')[0];
+            const email = user.userDetails;
+            const provider = user.identityProvider;
+            const avatarUrl = getProviderAvatar(provider, email);
+
+            // Update UI
             loginBtn.style.display = "none";
             logoutBtn.style.display = "inline-block";
-            userGreeting.textContent = `Welcome, ${user.userDetails}`;
+            userGreeting.textContent = `Welcome, ${name}`;
             userGreeting.style.display = "inline-block";
+            userAvatar.src = avatarUrl;
+            userAvatar.style.display = "inline-block";
 
-            // Record to Users table
+            // Record login
             const userInfo = {
-                Email: user.userDetails,
-                Name: user.userDetails.split('@')[0],
-                Provider: user.identityProvider,
+                Email: email,
+                Name: name,
+                Provider: provider,
                 LastLoginAt: new Date().toISOString()
             };
 
             await fetch("/rest/Users", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(userInfo)
             });
 
-            console.log("User login recorded:", userInfo.Email);
+            console.log("User login recorded:", email);
         } else {
-            // Show login + optional provider buttons
+            // Not logged in
             loginBtn.style.display = "inline-block";
             logoutBtn.style.display = "none";
             userGreeting.style.display = "none";
-            providerOptions.style.display = "inline-block";
+            userAvatar.style.display = "none";
         }
     } catch (err) {
-        console.error("Auth detection or API failed:", err);
+        console.error("Auth detection failed:", err);
     }
 });
+
+// Guess avatar based on provider or use fallback
+function getProviderAvatar(provider, email) {
+    switch (provider.toLowerCase()) {
+        case 'github': return `https://github.com/${email.split('@')[0]}.png`;
+        case 'google': return `https://www.gravatar.com/avatar/${md5(email)}?d=identicon`;
+        case 'microsoft': return 'https://cdn-icons-png.flaticon.com/512/732/732221.png'; // fallback
+        default: return 'assets/img/default-user.png';
+    }
+}
+
+// Simple MD5 hash function for Gravatar (optional)
+function md5(str) {
+    return CryptoJS.MD5(str.trim().toLowerCase()).toString();
+}
 </script>
 
+<!-- Add this in <head> for MD5 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+
+<!-- Login Provider Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="loginModalLabel">Sign In with Provider</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center py-4">
+        <p class="mb-4 text-muted">Select a provider to sign in securely:</p>
+        <div class="d-grid gap-2 col-8 mx-auto">
+          <a href="/.auth/login/google" class="btn btn-outline-danger">Google</a>
+          <a href="/.auth/login/github" class="btn btn-outline-dark">GitHub</a>
+          <a href="/.auth/login/microsoft" class="btn btn-outline-info">Microsoft</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
     </body>
 </html>
