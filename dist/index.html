@@ -579,7 +579,7 @@
                             userAvatarFallback.style.display = "flex";
                         }
 
-                        // Record login to Subscribers table
+                        // Record login to Users table
                         const loginRecord = {
                             Email: email,
                             Name: name,
@@ -588,11 +588,10 @@
                         };
 
                         try {
-                            const recordResponse = await fetch("/rest/Subscribers", {
+                            const recordResponse = await fetch("/rest/Users", {
                                 method: "POST",
                                 headers: { 
-                                    "Content-Type": "application/json",
-                                    "X-MS-API-ROLE": "authenticated"
+                                    "Content-Type": "application/json"
                                 },
                                 body: JSON.stringify(loginRecord)
                             });
